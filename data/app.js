@@ -124,6 +124,21 @@ if (window.__esp32IrHubAppInit) {
     btn.textContent = apEnabled ? "ปิด AP Mode" : "เปิด AP Mode";
   }
 
+  // ===== WiFi Status Display Update =====
+  function updateWifiStatusDisplay(st){
+    const icon = $("#wifi-status-icon");
+    const text = $("#wifi-status-text");
+    if(!icon || !text) return;
+
+    if(st.wifi.sta_connected){
+      icon.textContent = "✅";
+      text.textContent = `เชื่อมต่อแล้ว • SSID: ${st.wifi.sta_ssid || "—"} • IP: ${st.wifi.sta_ip || "—"}`;
+    }else{
+      icon.textContent = "❌";
+      text.textContent = "ยังไม่เชื่อมต่อ STA";
+    }
+  }
+
   /* =========================
      Device parsing
      Naming convention:
@@ -424,6 +439,10 @@ if (window.__esp32IrHubAppInit) {
         ? `เชื่อมต่อแล้ว • SSID: ${st.wifi.sta_ssid || "—"} • IP: ${st.wifi.sta_ip || "—"}`
         : "ยังไม่เชื่อมต่อ STA";
     }
+    
+    // Update the new WiFi status display
+    updateWifiStatusDisplay(st);
+    
     updateApToggleButton(apEnabled);
 
     updateWifiTabVisibilityFromStatus(st);
@@ -816,6 +835,9 @@ if (window.__esp32IrHubAppInit) {
   $("#wifi-ssid")?.addEventListener("input", (ev)=>{
     updateSelectedWifiLabel(ev?.target?.value || "");
   });
+
+  // Refresh WiFi status manually
+  $("#btn-wifi-refresh-status")?.addEventListener("click", refreshStatus);
 
   $("#btn-wifi-load")?.addEventListener("click", async ()=>{
     try{
