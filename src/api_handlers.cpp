@@ -48,7 +48,10 @@ void handleApiStatus()
   doc["learn"]["need"] = LEARN_TRIES;
   doc["learn"]["slot"] = learn.slot;
   doc["learn"]["status"] = learn.status;
-  doc["learn"]["remaining_ms"] = learn.active ? (int32_t)max<int32_t>(0, (int32_t)(LEARN_WINDOW_MS - (millis() - learn.startedAt))) : 0;
+  
+  // Calculate remaining time based on learn type
+  uint32_t timeout_ms = learn.isAdvanced ? LEARN_WINDOW_ADVANCED_MS : LEARN_WINDOW_MS;
+  doc["learn"]["remaining_ms"] = learn.active ? (int32_t)max<int32_t>(0, (int32_t)(timeout_ms - (millis() - learn.startedAt))) : 0;
 
   doc["wifi"]["ap_ssid"] = AP_SSID;
   doc["wifi"]["ap_ip"] = WiFi.softAPIP().toString();
@@ -92,6 +95,27 @@ void handleApiLearnStart()
   if (name.length() == 0)
     name = "New key";
 
+  // Check if advanced learn (contains ":")
+  bool isAdvanced = (name.indexOf(":") >= 0);
+
+  // For advanced learn, check for duplicates
+  if (isAdvanced)
+  {
+    for (uint8_t i = 0; i < MAX_KEYS; i++)
+    {
+      if (keys[i].used && String(keys[i].name) == name)
+      {
+        // Key with same name already exists - reuse it instead of creating new
+        StaticJsonDocument<256> doc;
+        doc["ok"] = false;
+        doc["error"] = "key_exists_will_reuse";
+        doc["message"] = "Will update existing key";
+        sendJson(200, doc);
+        return;
+      }
+    }
+  }
+
   int slot = findFreeSlot();
   if (slot < 0)
   {
@@ -106,6 +130,7 @@ void handleApiLearnStart()
   learn.startedAt = millis();
   learn.slot = slot;
   learn.got = 0;
+  learn.isAdvanced = isAdvanced;
   strlcpy(learn.pendingName, name.c_str(), sizeof(learn.pendingName));
   strlcpy(learn.status, "waiting", sizeof(learn.status));
 
@@ -121,6 +146,7 @@ void handleApiLearnCancel()
   learn.active = false;
   learn.got = 0;
   learn.slot = -1;
+  learn.isAdvanced = false;
   strlcpy(learn.status, "idle", sizeof(learn.status));
 
   StaticJsonDocument<128> doc;
@@ -366,7 +392,7 @@ void setupRoutes()
             {
     if (!loadFile("/app.js", "application/javascript; charset=utf-8")) server.send(404, "text/plain", "Missing app.js"); });
 
-  server.onNotFound([]()
+  server.onNotFound([]()  
                     {
     server.sendHeader("Location", "/", true);
     server.send(302, "text/plain", ""); });

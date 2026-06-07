@@ -19,7 +19,7 @@ static constexpr uint8_t IR_RECV_TIMEOUT_MS = 50;
 // =========================
 // RAW compare tolerance
 // =========================
-// 3 ครั้งต้อง "เหมือนกัน" แต่อนุญาตให้คลาดเคลื่อนเล็กน้อย (ตามจริง IR timing จะสวิงได้)
+// 3 ครั้งต้อง "เหมือนกัน" แต่อนุญาตให้คลาดเคลื่อนเล็กน้อย (ตามจริง IR timing จะแตกต่างกันเล็กน้อย)
 static constexpr uint16_t RAW_TOL_USEC = 200; // +/- 200us
 static constexpr float RAW_TOL_RATIO = 0.20f; // หรือ 20% (เลือก max ระหว่าง 2 เงื่อนไข)
 
@@ -28,7 +28,8 @@ static constexpr float RAW_TOL_RATIO = 0.20f; // หรือ 20% (เลือ�
 // =========================
 static constexpr uint8_t LEARN_TRIES = 3;
 static constexpr uint8_t MAX_KEYS = 20;
-static constexpr uint32_t LEARN_WINDOW_MS = 30000;
+static constexpr uint32_t LEARN_WINDOW_MS = 30000;  // 30 วินาที
+static constexpr uint32_t LEARN_WINDOW_ADVANCED_MS = 10000; // 10 วินาทีสำหรับการเรียนรู้ขั้นสูง
 
 // =========================
 // RAW storage limits

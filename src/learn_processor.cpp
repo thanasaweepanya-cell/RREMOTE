@@ -13,13 +13,17 @@ void learnTick()
   if (!learn.active)
     return;
 
+  // กำหนดเวลา timeout ตามประเภท learn
+  uint32_t timeout_ms = learn.isAdvanced ? LEARN_WINDOW_ADVANCED_MS : LEARN_WINDOW_MS;
+
   // หมดเวลา Learning
-  if (millis() - learn.startedAt >= LEARN_WINDOW_MS)
+  if (millis() - learn.startedAt >= timeout_ms)
   {
     learn.active = false;
     learn.got = 0;
     learn.slot = -1;
     learn.startedAt = 0;
+    learn.isAdvanced = false;
 
     strlcpy(
         learn.status,
@@ -76,6 +80,7 @@ void learnTick()
     learn.got = 0;
     learn.slot = -1;
     learn.startedAt = 0;
+    learn.isAdvanced = false;
 
     strlcpy(
         learn.status,
@@ -96,6 +101,7 @@ void learnTick()
     learn.got = 0;
     learn.slot = -1;
     learn.startedAt = 0;
+    learn.isAdvanced = false;
 
     strlcpy(
         learn.status,
@@ -120,6 +126,7 @@ void learnTick()
   learn.got = 0;
   learn.slot = -1;
   learn.startedAt = 0;
+  learn.isAdvanced = false;
 
   strlcpy(
       learn.status,

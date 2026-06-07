@@ -24,6 +24,7 @@ struct LearnState
   uint32_t startedAt = 0;
   char pendingName[32] = {0};
   int slot = -1;
+  bool isAdvanced = false;  // Track if this is advanced learn
 
   RawCode samples[LEARN_TRIES];
   uint8_t got = 0;
