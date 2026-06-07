@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ESP32 IR Hub</title>
+    <link rel="stylesheet" href="/app.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="dot"></div>
+            <div>
+                <div class="title">ESP32 IR Hub</div>
+                <div class="sub">Learn • Send IR</div>
+            </div>
+        </div>
+        <nav class="nav">
+            <button class="tab active" data-tab="keys">ปุ่ม</button>
+            <button class="tab" data-tab="learn">เรียนรู้</button>
+            <button id="tab-wifi-btn" class="tab" data-tab="wifi">Wi‑Fi</button>
+
+            <div class="nav-spacer"></div>
+
+            <button id="btn-all-on" class="btn btn-all primary">
+                <span>🔆</span>
+                <span>เปิดทั้งหมด</span>
+            </button>
+            <button id="btn-all-off" class="btn btn-all danger">
+                <span>🌙</span>
+                <span>ปิดทั้งหมด</span>
+            </button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="tab-keys" class="panel show">
+            <div class="panel-head">
+                <h2>อุปกรณ์ของฉัน</h2>
+                <button id="btn-refresh" class="btn">รีเฟรช</button>
+            </div>
+            <div id="keys-list" class="grid"></div>
+            <div class="hint">
+                กดเพื่อ "เปิด" หรือ "ปิด"
+            </div>
+        </section>
+
+        <section id="tab-learn" class="panel">
+            <div class="panel-head">
+                <h2>เรียนรู้ปุ่ม (ต้องกด 3 ครั้งให้เหมือนกัน)</h2>
+            </div>
+
+            <!-- Device Wizard (Step-by-step) -->
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                    <h2 style="margin:0">เพิ่มอุปกรณ์ (ง่าย)</h2>
+                    <div class="pill" id="dev-pill">idle</div>
+                </div>
+
+                <label class="label" style="margin-top:10px">ชื่ออุปกรณ์</label>
+                <input id="dev-name" class="input" placeholder="เช่น ทีวี, แอร์, พัดลม" maxlength="24" />
+
+                <div class="row" style="margin-top:12px">
+                    <button id="btn-dev-start" class="btn primary">เริ่มเพิ่มอุปกรณ์</button>
+                    <button id="btn-dev-cancel" class="btn danger">ยกเลิก</button>
+                </div>
+
+                <div class="learn-box" style="margin-top:12px">
+                    <div class="learn-status">
+                        <div class="small" id="dev-step">—</div>
+                        <div class="small" id="dev-tip">กดเริ่ม แล้วทำตามขั้นตอน: เปิด → ปิด</div>
+                    </div>
+                    <div class="small" style="margin-top:8px; opacity:.9">
+                        ระบบจะบันทึกชื่อให้อัตโนมัติเป็น <b>ชื่ออุปกรณ์:ON</b> และ <b>ชื่ออุปกรณ์:OFF</b>
+                    </div>
+                </div>
+            </div>
+
+            <details id="advanced-learn-details" class="advanced-options" style="display:none">
+                <summary class="summary-btn">⚙️ ตัวเลือกขั้นสูง: เรียนรู้ปุ่มเดี่ยว</summary>
+                <div class="card" style="margin-top:12px">
+                    <label class="label">เลือกอุปกรณ์</label>
+                    <select id="device-select" class="input" style="cursor:pointer">
+                        <option value="">-- เลือกอุปกรณ์ --</option>
+                    </select>
+
+                    <label class="label" style="margin-top:12px">ชื่อปุ่ม</label>
+                    <input id="learn-name" class="input" placeholder="เช่น Power, Temp+, Mode..." maxlength="31" />
+                    <div class="row" style="margin-top:12px">
+                        <button id="btn-learn-start" class="btn primary" disabled>เริ่มเรียนรู้</button>
+                        <button id="btn-learn-cancel" class="btn danger">ยกเลิก</button>
+                    </div>
+                    <div class="learn-box">
+                        <div class="learn-status">
+                            <div class="pill" id="learn-pill">idle</div>
+                            <div class="small" id="learn-progress">—</div>
+                        </div>
+                        <div class="small" id="learn-tip">
+                            เมื่อกดเริ่ม ให้เอารีโมทจ่อ IR Receiver แล้วกดปุ่มเดิม 3 ครั้ง
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="tab-wifi" class="panel">
+            <div class="panel-head">
+                <h2>ตั้งค่า Wi‑Fi (STA)</h2>
+            </div>
+
+            <div class="card">
+                <div class="small">โหมด AP เปิดตลอด: <b>ESP32-IR</b> / <b>12345678</b></div>
+                <hr />
+                <label class="label">ค้นหา Wi‑Fi รอบตัว</label>
+                <div class="row">
+                    <button id="btn-wifi-scan" class="btn">🔍 ค้นหา WiFi</button>
+                    <select id="wifi-list" class="input" style="cursor:pointer; flex:1">
+                        <option value="">-- เลือก WiFi ที่พบ --</option>
+                    </select>
+                </div>
+                <div class="small" id="scan-status">พร้อมค้นหา</div>
+                <div class="small" id="wifi-selected-label">✅ เลือก: —</div>
+
+                <label class="label">ประวัติ Wi‑Fi ล่าสุด</label>
+                <select id="wifi-history" class="input" style="cursor:pointer">
+                    <option value="">-- เลือกจากประวัติ --</option>
+                </select>
+                <hr />
+                <label class="label">SSID</label>
+                <input id="wifi-ssid" class="input" placeholder="Wi‑Fi บ้าน/ที่ทำงาน" />
+                <label class="label">Password</label>
+                <input id="wifi-pass" class="input" placeholder="ไม่ใส่ได้ถ้าเป็น open" />
+                <div class="row">
+                    <button id="btn-wifi-save" class="btn primary">บันทึก & เชื่อมต่อ</button>
+                    <button id="btn-wifi-load" class="btn">โหลดค่าปัจจุบัน</button>
+                    <button id="btn-wifi-logout" class="btn danger">Logout WiFi</button>
+                    <button id="btn-ap-toggle" class="btn">ปิด AP Mode</button>
+                </div>
+                <div class="small" id="wifi-state">—</div>
+                <div class="small" id="wifi-live-status">—</div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <span>จัดทำโดย [นายปัญญา ธนะเสวี & นายภูริทัต กุนอก นิสิตชั้นปีที่ 4 ]</span>
+    </footer>
+
+    <script src="/app.js"></script>
+</body>
+
+</html>
